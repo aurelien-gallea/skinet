@@ -1,7 +1,7 @@
 using System;
 using System.Security.Cryptography.X509Certificates;
 using Core.Entities;
-using Core.Entities.Interfaces;
+using Core.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace Infrastructure.Data;
