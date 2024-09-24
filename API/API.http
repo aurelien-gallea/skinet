@@ -3,9 +3,16 @@
 GET {{API_HostAddress}}/weatherforecast/
 Accept: application/json
 
-###
+### products
 
-GET {{API_HostAddress}}/test/
-Accept: apllication/json
-
+GET {{API_HostAddress}}/api/products/
+Accept: application/json
+### products/1
+GET {{API_HostAddress}}/api/products/1
+Accept: application/json
+### products?Brand=React
+GET {{API_HostAddress}}/api/products?Brand=React
+Accept: application/json
 ###
+GET {{API_HostAddress}}/api/test/
+Accept: application/json
