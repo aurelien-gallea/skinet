@@ -2,7 +2,9 @@ using System;
 using System.Security.Cryptography.X509Certificates;
 using Core.Entities;
 using Core.Interfaces;
+using Core.Specifications;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Infrastructure.Data;
 
@@ -29,8 +31,31 @@ public class ProductRepository(StoreContext context) : IProductRepository
         return await context.Products.FindAsync(id);
     }
 
-    public async Task<IReadOnlyList<Product>> GetProductsAsync(string? brands, string? types, string? sort)
+    public async Task<IReadOnlyList<Product>> GetProductsAsync(ProductSpecParams specParams)
     {
+        string brands = "";
+        string types = "";
+
+
+        if (specParams.Brands.Count > 0)
+        {
+            foreach (var b in specParams.Brands)
+            {
+                brands += b + ",";
+            }
+            brands = brands.Substring(0, brands.Length - 1);
+        }
+
+        if (specParams.Types.Count > 0)
+        {
+            foreach (var t in specParams.Types)
+            {
+                types += t + ",";
+            }
+            types = types.Substring(0, types.Length - 1);
+        }
+
+        
         var query = context.Products.AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(brands))
@@ -41,8 +66,12 @@ public class ProductRepository(StoreContext context) : IProductRepository
         {
             query =query.Where(x => types.Contains(x.Type));
         }
-       
-        query = sort switch
+        
+        if (!string.IsNullOrWhiteSpace(specParams.Search))
+        {
+            query = query.Where(x => x.Name.Contains(specParams.Search));
+        }
+        query = specParams.Sort switch
         {
             "priceAsc" => query.OrderBy(x => x.Price),
             "priceDesc" => query.OrderByDescending(x => x.Price),

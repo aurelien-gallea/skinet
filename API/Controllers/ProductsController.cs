@@ -1,8 +1,8 @@
+using API.RequestHelpers;
 using Core.Entities;
 using Core.Interfaces;
 using Core.Specifications;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 
 namespace API.Controllers;
 
@@ -19,43 +19,17 @@ public class ProductsController(IGenericRepository<Product> repo, IProductReposi
 
 
         // fix pour que ça fonctionne ------------------------------
-        string brands = "";
-        string types = "";
+        //if (specParams.Types.Count > 0 || specParams.Brands.Count > 0)
+        //{
+        var products = await productRepo.GetProductsAsync(specParams);
+        var data = products.Skip((specParams.PageIndex - 1) * specParams.PageSize).Take(specParams.PageSize).ToList();
+        var pagedProduct = new Pagination<Product>(specParams.PageIndex, specParams.PageSize, products.Count(), data);
+        return Ok(pagedProduct);
+        //}
 
-
-        if (specParams.Brands.Count > 0)
-        {
-            foreach (var b in specParams.Brands)
-            {
-                brands += b + ",";
-            }
-            brands = brands.Substring(0, brands.Length - 1);
-        }
-
-        if (specParams.Types.Count > 0)
-        {
-            foreach (var t in specParams.Types)
-            {
-                types += t + ",";
-            }
-            types = types.Substring(0, types.Length - 1);
-        }
-
-        if (!brands.IsNullOrEmpty() || !types.IsNullOrEmpty())
-        {
-
-            var products = await productRepo.GetProductsAsync(brands, types, specParams.Sort);
-            return Ok(new
-            {
-                PageIndex = specParams.PageIndex,
-                PageSize = specParams.PageSize,
-                Count = products.Count(),
-                Data = products
-            });
-        }
         // fin du fix ----------------------------------------
 
-        return await CreatePageResult(repo, spec, specParams.PageIndex, specParams.PageSize);
+        //return await CreatePageResult(repo, spec, specParams.PageIndex, specParams.PageSize);
     }
 
     [HttpGet("{id:int}")] //api/products/2
