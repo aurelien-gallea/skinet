@@ -1,16 +1,13 @@
-using System;
-using API.RequestHelpers;
 using Core.Entities;
 using Core.Interfaces;
 using Core.Specifications;
-using Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 namespace API.Controllers;
 
 
-public class ProductsController(IGenericRepository<Product> repo) : BaseApiController
+public class ProductsController(IGenericRepository<Product> repo, IProductRepository productRepo) : BaseApiController
 {
 
 
@@ -21,7 +18,44 @@ public class ProductsController(IGenericRepository<Product> repo) : BaseApiContr
         var spec = new ProductSpecification(specParams);
 
 
-        return await CreatePageResult(repo,spec, specParams.PageIndex, specParams.PageSize);
+        // fix pour que ça fonctionne ------------------------------
+        string brands = "";
+        string types = "";
+
+
+        if (specParams.Brands.Count > 0)
+        {
+            foreach (var b in specParams.Brands)
+            {
+                brands += b + ",";
+            }
+            brands = brands.Substring(0, brands.Length - 1);
+        }
+
+        if (specParams.Types.Count > 0)
+        {
+            foreach (var t in specParams.Types)
+            {
+                types += t + ",";
+            }
+            types = types.Substring(0, types.Length - 1);
+        }
+
+        if (!brands.IsNullOrEmpty() || !types.IsNullOrEmpty())
+        {
+
+            var products = await productRepo.GetProductsAsync(brands, types, specParams.Sort);
+            return Ok(new
+            {
+                PageIndex = specParams.PageIndex,
+                PageSize = specParams.PageSize,
+                Count = products.Count(),
+                Data = products
+            });
+        }
+        // fin du fix ----------------------------------------
+
+        return await CreatePageResult(repo, spec, specParams.PageIndex, specParams.PageSize);
     }
 
     [HttpGet("{id:int}")] //api/products/2

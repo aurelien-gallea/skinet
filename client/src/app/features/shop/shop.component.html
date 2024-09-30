@@ -1,7 +1,32 @@
-<div class="grid grid-cols-5 gap-4">
+<div class="flex flex-col gap-3">
+    <div class="flex justify-end gap-3">
+        <button mat-stroked-button (click)="openFiltersDialog()">
+            <mat-icon>filter_list</mat-icon>
+            Filters
+        </button>
+        <button mat-stroked-button [mat-menu-trigger-for]="sortMenu">
+            <mat-icon>swap_vert</mat-icon>
+            Sort
+        </button>
+    </div>
     
+    <div class="grid grid-cols-5 gap-4">
+        
         @for (product of products; track product.id) {
             <app-product-item [product]="product"></app-product-item>
         }
-    
+        
+    </div>
 </div>
+
+<mat-menu #sortMenu="matMenu">
+    <mat-selection-list [multiple]="false" (selectionChange)="onSortChange($event)">
+        @for (sort of sortOptions; track $index) {
+            <mat-list-option 
+            [value]="sort.value" 
+            [selected]="selectedSort === sort.value">
+            {{sort.name}}
+        </mat-list-option>
+        }
+    </mat-selection-list>
+</mat-menu>
