@@ -16,6 +16,11 @@ public class ProductRepository(StoreContext context) : IProductRepository
         context.Products.Add(product);
     }
 
+    public async Task<int> CountAsync()
+    {
+      return await context.Products.CountAsync();
+    }
+
     public void DeleteProduct(Product product)
     {
         context.Products.Remove(product);
@@ -80,7 +85,10 @@ public class ProductRepository(StoreContext context) : IProductRepository
         };
         
 
-        return await query.ToListAsync();
+        return await query
+            .Skip((specParams.PageIndex - 1) * specParams.PageSize)
+            .Take(specParams.PageSize)
+            .ToListAsync();
     }
 
 

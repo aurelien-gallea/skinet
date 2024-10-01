@@ -19,13 +19,17 @@ public class ProductsController(IGenericRepository<Product> repo, IProductReposi
 
 
         // fix pour que ça fonctionne ------------------------------
-        //if (specParams.Types.Count > 0 || specParams.Brands.Count > 0)
-        //{
+        
         var products = await productRepo.GetProductsAsync(specParams);
-        var data = products.Skip((specParams.PageIndex - 1) * specParams.PageSize).Take(specParams.PageSize).ToList();
-        var pagedProduct = new Pagination<Product>(specParams.PageIndex, specParams.PageSize, products.Count(), data);
+        var count = await productRepo.CountAsync();
+
+        if (specParams.Types.Count > 0 || specParams.Brands.Count > 0 || specParams.Search.Count() > 0)
+        {
+            count = products.Count();
+        }
+
+        var pagedProduct = new Pagination<Product>(specParams.PageIndex, specParams.PageSize, count, products);
         return Ok(pagedProduct);
-        //}
 
         // fin du fix ----------------------------------------
 
